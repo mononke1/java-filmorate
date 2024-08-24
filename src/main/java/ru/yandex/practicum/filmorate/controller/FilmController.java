@@ -21,15 +21,15 @@ public class FilmController {
 
     @GetMapping
     public Collection<Film> findAll() {
-        log.info("Получен запрос на получение всех фильмов");
+        log.info("Получен запрос на получение всех фильмов.");
         return films.values();
     }
 
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
         if (film.getName().isBlank()) {
-            log.error("Попытка создания фильма с пустым названием");
-            throw new ValidationException("Название не может быть пустым");
+            log.error("Попытка создания фильма с пустым названием.");
+            throw new ValidationException("Название не может быть пустым.");
         }
         validateDate(film);
         film.setId(getNextId());
@@ -41,12 +41,12 @@ public class FilmController {
     @PutMapping
     public Film update(@Valid @RequestBody Film newFilm) {
         if (newFilm.getId() == null) {
-            log.error("Попытка обновления фильма без указания ID");
-            throw new ValidationException("Id должен быть указан");
+            log.error("Попытка обновления фильма без указания ID.");
+            throw new ValidationException("Id должен быть указан.");
         }
         if (!films.containsKey(newFilm.getId())) {
             log.error("Фильм с id = {} не найден", newFilm.getId());
-            throw new NotFoundException("Фильм с id = " + newFilm.getId() + " не найден");
+            throw new NotFoundException("Фильм с id = " + newFilm.getId() + " не найден.");
         }
 
         Film existingFilm = films.get(newFilm.getId());
@@ -58,15 +58,15 @@ public class FilmController {
     private void validateDate(Film film) {
         if (film.getReleaseDate().isBefore(MIN_DATE)) {
             log.error("Дата релиза фильма с ID {} не соответствует минимальной дате: {}", film.getId(), MIN_DATE);
-            throw new ValidationException("Дата релиза должна быть не раньше 28 декабря 1895 года");
+            throw new ValidationException("Дата релиза должна быть не раньше 28 декабря 1895 года.");
         }
     }
 
     private void updateFilmFields(Film existingFilm, Film newFilm) {
         if (newFilm.getName() != null) {
             if (newFilm.getName().isBlank()) {
-                log.error("Попытка обновления фильма с пустым названием");
-                throw new ValidationException("Имя пользователя не должно быть пустым и не должно состоять только из пробелов");
+                log.error("Попытка обновления фильма с пустым названием.");
+                throw new ValidationException("Имя пользователя не должно быть пустым и не должно состоять только из пробелов.");
             }
             log.debug("Обновление названия фильма с ID {} на {}", existingFilm.getId(), newFilm.getName());
             existingFilm.setName(newFilm.getName());

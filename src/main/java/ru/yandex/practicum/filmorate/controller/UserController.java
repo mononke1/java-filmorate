@@ -40,11 +40,11 @@ public class UserController {
     public User update(@Valid @RequestBody User newUser) {
         if (newUser.getId() == null) {
             log.error("Ошибка при обновлении: ID пользователя не указан.");
-            throw new ValidationException("Id должен быть указан");
+            throw new ValidationException("Id должен быть указан.");
         }
         if (!users.containsKey(newUser.getId())) {
             log.error("Пользователь с ID {} не найден.", newUser.getId());
-            throw new NotFoundException("Пользователь с id = " + newUser.getId() + " не найден");
+            throw new NotFoundException("Пользователь с id = " + newUser.getId() + " не найден.");
         }
 
         User existingUser = users.get(newUser.getId());
