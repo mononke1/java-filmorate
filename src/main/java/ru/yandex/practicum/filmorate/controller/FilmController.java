@@ -27,11 +27,20 @@ public class FilmController {
 
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
-        if (film.getName().isBlank()) {
+        if (film == null) {
+            log.error("Попытка создания фильма с null значением.");
+            throw new ValidationException("Фильм не может быть null.");
+        }
+        if (isNameInvalid(film)) {
             log.error("Попытка создания фильма с пустым названием.");
             throw new ValidationException("Название не может быть пустым.");
         }
-        validateDate(film);
+        try {
+            validateDate(film);
+        } catch (ValidationException e) {
+            log.error("Ошибка при валидации даты релиза фильма: {}", e.getMessage());
+            throw new ValidationException("Ошибка валидации", e);
+        }
         film.setId(getNextId());
         films.put(film.getId(), film);
         log.info("Создан новый фильм с ID {}: {}", film.getId(), film);
@@ -50,7 +59,12 @@ public class FilmController {
         }
 
         Film existingFilm = films.get(newFilm.getId());
-        updateFilmFields(existingFilm, newFilm);
+        try {
+            updateFilmFields(existingFilm, newFilm);
+        } catch (ValidationException e) {
+            log.error("Ошибка при обновлении полей фильма с ID {}: {}", newFilm.getId(), e.getMessage());
+            throw new ValidationException("Ошибка обновления", e);
+        }
         log.info("Фильм с ID {} был обновлен: {}", newFilm.getId(), existingFilm);
         return existingFilm;
     }
@@ -63,15 +77,15 @@ public class FilmController {
     }
 
     private void updateFilmFields(Film existingFilm, Film newFilm) {
-        if (newFilm.getName() != null) {
-            if (newFilm.getName().isBlank()) {
-                log.error("Попытка обновления фильма с пустым названием.");
-                throw new ValidationException("Имя пользователя не должно быть пустым и не должно состоять только из пробелов.");
-            }
+        if (!isNameInvalid(newFilm)) {
             log.debug("Обновление названия фильма с ID {} на {}", existingFilm.getId(), newFilm.getName());
             existingFilm.setName(newFilm.getName());
         }
         if (newFilm.getDescription() != null) {
+            if (newFilm.getDescription().isBlank()) {
+                log.error("Попытка обновления фильма с пустым описанием.");
+                throw new ValidationException("Описание фильма не должно быть пустым и не должно состоять только из пробелов.");
+            }
             log.debug("Обновление описания фильма с ID {}", existingFilm.getId());
             existingFilm.setDescription(newFilm.getDescription());
         }
@@ -84,6 +98,10 @@ public class FilmController {
             log.debug("Обновление продолжительности фильма с ID {} на {}", existingFilm.getId(), newFilm.getDuration());
             existingFilm.setDuration(newFilm.getDuration());
         }
+    }
+
+    private boolean isNameInvalid(Film film) {
+        return film.getName() == null || film.getName().isBlank();
     }
 
     private long getNextId() {

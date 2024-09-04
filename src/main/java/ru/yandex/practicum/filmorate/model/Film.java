@@ -8,15 +8,19 @@ import java.time.LocalDate;
 
 @Data
 public class Film {
-    Long id;
-    String name;
+    private static final String FORMAT = "yyyy-MM-dd";
+    private Long id;
+
+    @NotBlank
+    private String name;
 
     @Size(max = 200, message = "Максимальная длина описания — 200 символов")
-    String description;
+    @NotNull
+    private String description;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    LocalDate releaseDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = FORMAT)
+    private LocalDate releaseDate;
 
     @Positive(message = "продолжительность фильма должна быть положительным числом")
-    Long duration;
+    private Long duration;
 }

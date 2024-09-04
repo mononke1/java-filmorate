@@ -26,7 +26,11 @@ public class UserController {
 
     @PostMapping
     public User create(@Valid @RequestBody User user) {
-        if (user.getName() == null || user.getName().isBlank()) {
+        if (user == null) {
+            log.error("Попытка создания пользователя с null значением.");
+            throw new ValidationException("Пользователь не может быть null.");
+        }
+        if (isNameInvalid(user)) {
             user.setName(user.getLogin());
             log.debug("Имя пользователя пустое, установлено значение логина: {}", user.getLogin());
         }
@@ -59,7 +63,7 @@ public class UserController {
             log.debug("Обновление логина пользователя с ID {}: {}", existingUser.getId(), newUser.getLogin());
             existingUser.setLogin(newUser.getLogin());
         }
-        if (newUser.getName() != null && !newUser.getName().isBlank()) {
+        if (!isNameInvalid(newUser)) {
             log.debug("Обновление имени пользователя с ID {}: {}", existingUser.getId(), newUser.getName());
             existingUser.setName(newUser.getName());
         } else {
@@ -74,6 +78,10 @@ public class UserController {
             log.debug("Обновление даты рождения пользователя с ID {}: {}", existingUser.getId(), newUser.getBirthday());
             existingUser.setBirthday(newUser.getBirthday());
         }
+    }
+
+    private boolean isNameInvalid(User user) {
+        return user.getName() == null || user.getName().isBlank();
     }
 
     private long getNextId() {

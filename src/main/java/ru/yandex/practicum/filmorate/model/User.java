@@ -8,16 +8,19 @@ import java.time.LocalDate;
 
 @Data
 public class User {
-    String name;
-    Long id;
+    private static final String FORMAT = "yyyy-MM-dd";
+    private String name;
+    private Long id;
 
+    @NotEmpty(message = "Адрес электронной почты не может быть пустым")
     @Email(message = "Некорректный адрес электронной почты")
-    String email;
+    private String email;
 
     @Pattern(regexp = "^[^\\s]+$", message = "Логин не должн содержать пробелы")
-    String login;
+    private String login;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = FORMAT)
     @PastOrPresent(message = "Дата рождения не может быть в будущем")
-    LocalDate birthday;
+    @NotNull(message = "Дата рождения не может быть null")
+    private LocalDate birthday;
 }
