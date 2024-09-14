@@ -9,7 +9,7 @@ import java.time.LocalDate;
 
 @Data
 public class User {
-    private final String FORMAT = DateConstants.FORMAT;
+    private final String dateFormat  = DateConstants.format;
     private Long id;
     private String name;
 
@@ -20,7 +20,7 @@ public class User {
     @Pattern(regexp = "^[^\\s]+$", message = "Логин не должн содержать пробелы")
     private String login;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = FORMAT)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = dateFormat)
     @PastOrPresent(message = "Дата рождения не может быть в будущем")
     private LocalDate birthday;
 }
