@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,18 +23,33 @@ public class UserControllerTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
-    @Test
-    public void testCreateAndUpdateUser() {
-        User user = new User();
+    private User user;
+    private User newUser;
+    private String url;
+
+    @BeforeEach
+    public void setUp() {
+        // Инициализация URL для запросов
+        url = "http://localhost:" + port + "/users";
+
+        // Инициализация объектов User для каждого теста
+        user = new User();
         user.setName("Test Film");
         user.setLogin("TestFilm");
         user.setBirthday(LocalDate.of(2020, 1, 1));
         user.setEmail("test@test.ru");
 
-        String url = "http://localhost:" + port + "/users";
+        newUser = new User();
+        newUser.setName("Test Film - new");
+        newUser.setLogin("Test");
+        newUser.setBirthday(LocalDate.of(2019, 1, 1));
+        newUser.setEmail("NewTest@test.ru");
+    }
 
+    @Test
+    public void testCreateAndUpdateUser() {
+        // Создание нового пользователя
         ResponseEntity<User> response = restTemplate.postForEntity(url, user, User.class);
-
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
@@ -42,18 +58,14 @@ public class UserControllerTest {
         assertEquals("TestFilm", response.getBody().getLogin());
         assertEquals("test@test.ru", response.getBody().getEmail());
 
-        Long createdFilmId = response.getBody().getId();
-        assertNotNull(createdFilmId);
+        Long createdUserId = response.getBody().getId();
+        assertNotNull(createdUserId);
 
-        User newUser = new User();
-        newUser.setId(createdFilmId);
-        newUser.setName("Test Film - new");
-        newUser.setLogin("Test");
-        newUser.setBirthday(LocalDate.of(2019, 1, 1));
-        newUser.setEmail("NewTest@test.ru");
-
+        // Обновление пользователя
+        newUser.setId(createdUserId);
         restTemplate.put(url, newUser);
 
+        // Проверка обновленного пользователя
         ResponseEntity<User[]> updatedResponse = restTemplate.getForEntity(url, User[].class);
 
         assertEquals(HttpStatus.OK, updatedResponse.getStatusCode());
@@ -62,11 +74,11 @@ public class UserControllerTest {
         User[] users = updatedResponse.getBody();
         assertTrue(users.length > 0);
 
-        User updatedFilm = users[0];
+        User updatedUser = users[0];
 
-        assertEquals("Test Film - new", updatedFilm.getName());
-        assertEquals(LocalDate.of(2019, 1, 1), updatedFilm.getBirthday());
-        assertEquals("Test", updatedFilm.getLogin());
-        assertEquals("NewTest@test.ru", updatedFilm.getEmail());
+        assertEquals("Test Film - new", updatedUser.getName());
+        assertEquals(LocalDate.of(2019, 1, 1), updatedUser.getBirthday());
+        assertEquals("Test", updatedUser.getLogin());
+        assertEquals("NewTest@test.ru", updatedUser.getEmail());
     }
 }

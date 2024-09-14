@@ -70,14 +70,12 @@ public class UserController {
             existingUser.setName(existingUser.getLogin());
             log.debug("Имя пользователя с ID {} установлено в логин: {}", existingUser.getId(), existingUser.getLogin());
         }
-        if (newUser.getEmail() != null) {
-            log.debug("Обновление email пользователя с ID {}: {}", existingUser.getId(), newUser.getEmail());
-            existingUser.setEmail(newUser.getEmail());
-        }
-        if (newUser.getBirthday() != null) {
-            log.debug("Обновление даты рождения пользователя с ID {}: {}", existingUser.getId(), newUser.getBirthday());
-            existingUser.setBirthday(newUser.getBirthday());
-        }
+        log.debug("Обновление email пользователя с ID {}: {}", existingUser.getId(), newUser.getEmail());
+        existingUser.setEmail(newUser.getEmail());
+
+        log.debug("Обновление даты рождения пользователя с ID {}: {}", existingUser.getId(), newUser.getBirthday());
+        existingUser.setBirthday(newUser.getBirthday());
+
     }
 
     private boolean isNameInvalid(User user) {
