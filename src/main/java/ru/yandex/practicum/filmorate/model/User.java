@@ -3,13 +3,15 @@ package ru.yandex.practicum.filmorate.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 import lombok.Data;
-import ru.yandex.practicum.filmorate.util.DateConstants;
+import ru.yandex.practicum.filmorate.util.DateUtil;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 public class User {
-    private final String dateFormat  = DateConstants.format;
+    private Set<Long> friends = new HashSet<>();
     private Long id;
     private String name;
 
@@ -17,10 +19,11 @@ public class User {
     @Email(message = "Некорректный адрес электронной почты")
     private String email;
 
+    @NotEmpty(message = "Логин не должен быть пустым")
     @Pattern(regexp = "^[^\\s]+$", message = "Логин не должн содержать пробелы")
     private String login;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = dateFormat)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DateUtil.format)
     @PastOrPresent(message = "Дата рождения не может быть в будущем")
     private LocalDate birthday;
 }
