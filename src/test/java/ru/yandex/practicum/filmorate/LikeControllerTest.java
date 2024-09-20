@@ -41,7 +41,7 @@ public class LikeControllerTest {
     public void testAddLike() throws Exception {
         when(likeService.addLike(1L, 2L)).thenReturn(film);
 
-        mockMvc.perform(put("/films/1/likes/2"))
+        mockMvc.perform(put("/films/1/like/2"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.name").value("Test Film"));
@@ -51,7 +51,7 @@ public class LikeControllerTest {
     public void testRemoveLike() throws Exception {
         when(likeService.removeLike(1L, 2L)).thenReturn(film);
 
-        mockMvc.perform(delete("/films/1/likes/2"))
+        mockMvc.perform(delete("/films/1/like/2"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.name").value("Test Film"));
