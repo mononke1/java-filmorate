@@ -11,8 +11,9 @@ import java.util.Set;
 
 @Data
 public class User {
-    private Set<Long> friends = new HashSet<>();
     private Long id;
+    private Set<Long> friends = new HashSet<>();
+
     private String name;
 
     @NotEmpty(message = "Адрес электронной почты не может быть пустым")
@@ -23,7 +24,7 @@ public class User {
     @Pattern(regexp = "^[^\\s]+$", message = "Логин не должн содержать пробелы")
     private String login;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DateUtil.format)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DateUtil.FORMAT)
     @PastOrPresent(message = "Дата рождения не может быть в будущем")
     private LocalDate birthday;
 }

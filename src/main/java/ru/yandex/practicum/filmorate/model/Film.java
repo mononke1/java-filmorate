@@ -11,8 +11,8 @@ import java.util.Set;
 
 @Data
 public class Film {
-    private Set<Long> likes = new HashSet<>();
     private Long id;
+    private Set<Long> likes = new HashSet<>();
 
     @NotBlank(message = "название не должно быть пустым")
     private String name;
@@ -20,7 +20,7 @@ public class Film {
     @Size(max = 200, message = "Максимальная длина описания — 200 символов")
     private String description;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DateUtil.format)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DateUtil.FORMAT)
     @PastOrPresent(message = "Фильм должен уже быть доступен для просмотра")
     private LocalDate releaseDate;
 

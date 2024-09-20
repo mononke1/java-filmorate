@@ -13,7 +13,7 @@ public class ErrorHandler {
 
     @ExceptionHandler(ValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleValidationException(final ValidationException e) {
+    public ErrorResponse handleValidationException(ValidationException e) {
         log.warn("Validation error occurred: {}", e.getMessage(), e);
         return new ErrorResponse("Validation Error", e.getMessage());
     }
@@ -28,7 +28,7 @@ public class ErrorHandler {
 
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleNotFoundException(final NotFoundException e) {
+    public ErrorResponse handleNotFoundException(NotFoundException e) {
         log.error("Resource not found: {}", e.getMessage(), e);
         return new ErrorResponse("Error", e.getMessage());
     }

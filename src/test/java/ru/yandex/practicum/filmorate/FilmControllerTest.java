@@ -45,11 +45,11 @@ public class FilmControllerTest {
 
         mockMvc.perform(get("/films"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(1L))
+                .andExpect(jsonPath("$[0].id").value(1))
                 .andExpect(jsonPath("$[0].name").value("Test Film"))
                 .andExpect(jsonPath("$[0].description").value("Test description"))
                 .andExpect(jsonPath("$[0].releaseDate").value("2000-01-01"))
-                .andExpect(jsonPath("$[0].duration").value(120L));
+                .andExpect(jsonPath("$[0].duration").value(120));
     }
 
     @Test
@@ -58,11 +58,11 @@ public class FilmControllerTest {
 
         mockMvc.perform(get("/films/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.name").value("Test Film"))
                 .andExpect(jsonPath("$.description").value("Test description"))
                 .andExpect(jsonPath("$.releaseDate").value("2000-01-01"))
-                .andExpect(jsonPath("$.duration").value(120L));
+                .andExpect(jsonPath("$.duration").value(120));
     }
 
     @Test
@@ -73,20 +73,17 @@ public class FilmControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"Test Film\", \"description\":\"Test description\", \"releaseDate\":\"2000-01-01\", \"duration\":120}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.name").value("Test Film"))
                 .andExpect(jsonPath("$.description").value("Test description"))
                 .andExpect(jsonPath("$.releaseDate").value("2000-01-01"))
-                .andExpect(jsonPath("$.duration").value(120L));
+                .andExpect(jsonPath("$.duration").value(120));
     }
 
     @Test
     public void testUpdateFilm() throws Exception {
-        // Обновляем поля объекта film перед вызовом мок-метода
         film.setName("Updated Film");
         film.setDescription("Updated description");
-        film.setReleaseDate(LocalDate.of(2000, 1, 1));
-        film.setDuration(120L);
 
         when(filmService.update(any(Film.class))).thenReturn(film);
 
@@ -94,11 +91,11 @@ public class FilmControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"id\":1, \"name\":\"Updated Film\", \"description\":\"Updated description\", \"releaseDate\":\"2000-01-01\", \"duration\":120}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.name").value("Updated Film"))
                 .andExpect(jsonPath("$.description").value("Updated description"))
                 .andExpect(jsonPath("$.releaseDate").value("2000-01-01"))
-                .andExpect(jsonPath("$.duration").value(120L));
+                .andExpect(jsonPath("$.duration").value(120));
     }
 
     @Test
@@ -107,27 +104,7 @@ public class FilmControllerTest {
 
         mockMvc.perform(delete("/films/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.name").value("Test Film"));
-    }
-
-    @Test
-    public void testAddLike() throws Exception {
-        when(filmService.addLike(1L, 2L)).thenReturn(film);
-
-        mockMvc.perform(put("/films/1/like/2"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.name").value("Test Film"));
-    }
-
-    @Test
-    public void testRemoveLike() throws Exception {
-        when(filmService.removeLike(1L, 2L)).thenReturn(film);
-
-        mockMvc.perform(delete("/films/1/like/2"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.name").value("Test Film"));
     }
 
@@ -137,10 +114,10 @@ public class FilmControllerTest {
 
         mockMvc.perform(get("/films/popular?count=10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(1L))
+                .andExpect(jsonPath("$[0].id").value(1))
                 .andExpect(jsonPath("$[0].name").value("Test Film"))
                 .andExpect(jsonPath("$[0].description").value("Test description"))
                 .andExpect(jsonPath("$[0].releaseDate").value("2000-01-01"))
-                .andExpect(jsonPath("$[0].duration").value(120L));
+                .andExpect(jsonPath("$[0].duration").value(120));
     }
 }

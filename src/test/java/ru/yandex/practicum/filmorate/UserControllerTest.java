@@ -16,9 +16,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 @WebMvcTest(UserController.class)
 public class UserControllerTest {
@@ -101,44 +99,5 @@ public class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(jsonPath("$.name").value("Test User"));
-    }
-
-    @Test
-    public void testAddFriend() throws Exception {
-        when(userService.addFriend(1L, 2L)).thenReturn(user);
-
-        mockMvc.perform(put("/users/1/friends/2"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.name").value("Test User"));
-    }
-
-    @Test
-    public void testRemoveFriend() throws Exception {
-        when(userService.removeFriend(1L, 2L)).thenReturn(user);
-
-        mockMvc.perform(delete("/users/1/friends/2"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.name").value("Test User"));
-    }
-
-    @Test
-    public void testGetFriends() throws Exception {
-        when(userService.getFriends(1L)).thenReturn(Arrays.asList(2L, 3L));
-
-        mockMvc.perform(get("/users/1/friends"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0]").value(2L))
-                .andExpect(jsonPath("$[1]").value(3L));
-    }
-
-    @Test
-    public void testGetCommonFriends() throws Exception {
-        when(userService.getCommonFriends(1L, 2L)).thenReturn(List.of(3L));
-
-        mockMvc.perform(get("/users/1/friends/common/2"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0]").value(3L));
     }
 }

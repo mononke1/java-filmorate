@@ -28,10 +28,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         if (film == null) {
             throw new ValidationException("Фильм не может быть null.");
         }
-        if (isNameInvalid(film)) {
-            throw new ValidationException("название фильма должно быть указано");
-        }
-        validateDate(film);
+        isValidateDate(film);
         film.setId(getNextId());
         films.put(film.getId(), film);
         log.info("Создан новый фильм с ID {}: {}", film.getId(), film);
@@ -84,8 +81,7 @@ public class InMemoryFilmStorage implements FilmStorage {
             log.debug("Обновление описания фильма с ID {}", existingFilm.getId());
             existingFilm.setDescription(newFilm.getDescription());
         }
-        if (newFilm.getReleaseDate() != null) {
-            validateDate(newFilm);
+        if (isValidateDate(newFilm)) {
             log.debug("Обновление даты релиза фильма с ID {} на {}", existingFilm.getId(), newFilm.getReleaseDate());
             existingFilm.setReleaseDate(newFilm.getReleaseDate());
         }
@@ -95,14 +91,14 @@ public class InMemoryFilmStorage implements FilmStorage {
         }
     }
 
-    private void validateDate(Film film) {
-        if (film.getReleaseDate().isBefore(DateUtil.MIN_DATE)) {
-            throw new ValidationException("Дата релиза должна быть не раньше 28 декабря 1895 года.");
+    private Boolean isValidateDate(Film film) {
+        if (film.getReleaseDate() != null) {
+            if (film.getReleaseDate().isBefore(DateUtil.MIN_DATE)) {
+                throw new ValidationException("Дата релиза должна быть не раньше 28 декабря 1895 года.");
+            }
+            return true;
         }
-    }
-
-    private boolean isNameInvalid(Film film) {
-        return film.getName() == null;
+        return false;
     }
 
     private long getNextId() {
