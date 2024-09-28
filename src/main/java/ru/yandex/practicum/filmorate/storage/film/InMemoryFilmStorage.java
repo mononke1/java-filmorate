@@ -92,13 +92,10 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     private Boolean isValidateDate(Film film) {
-        if (film.getReleaseDate() != null) {
-            if (film.getReleaseDate().isBefore(DateUtil.MIN_DATE)) {
-                throw new ValidationException("Дата релиза должна быть не раньше 28 декабря 1895 года.");
-            }
-            return true;
+        if (film.getReleaseDate() != null && film.getReleaseDate().isBefore(DateUtil.MIN_DATE)) {
+            throw new ValidationException("Дата релиза должна быть не раньше 28 декабря 1895 года.");
         }
-        return false;
+        return film.getReleaseDate() != null;
     }
 
     private long getNextId() {
