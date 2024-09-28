@@ -1,84 +1,123 @@
 package ru.yandex.practicum.filmorate;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.mockito.Mockito.*;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.time.LocalDate;
+import java.util.Collections;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@WebMvcTest(FilmController.class)
 public class FilmControllerTest {
 
-    @LocalServerPort
-    private int port;
-
     @Autowired
-    private TestRestTemplate restTemplate;
+    private MockMvc mockMvc;
+
+    @MockBean
+    private FilmService filmService;
 
     private Film film;
-    private Film newFilm;
-    private String url;
 
     @BeforeEach
     public void setUp() {
-        // Инициализация URL для запросов
-        url = "http://localhost:" + port + "/films";
-
-        // Инициализация объектов Film для каждого теста
         film = new Film();
+        film.setId(1L);
         film.setName("Test Film");
-        film.setDescription("Test Film");
-        film.setReleaseDate(LocalDate.of(2020, 1, 1));
+        film.setDescription("Test description");
+        film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(120L);
-
-        newFilm = new Film();
-        newFilm.setName("Test Film - new");
-        newFilm.setDescription("Test Film - new");
-        newFilm.setReleaseDate(LocalDate.of(2010, 1, 1));
-        newFilm.setDuration(200L);
     }
 
     @Test
-    public void testCreateAndUpdateFilm() {
-        // Создание нового фильма
-        ResponseEntity<Film> response = restTemplate.postForEntity(url, film, Film.class);
+    public void testFindAll() throws Exception {
+        when(filmService.findAll()).thenReturn(Collections.singletonList(film));
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals("Test Film", response.getBody().getName());
-        assertEquals(LocalDate.of(2020, 1, 1), response.getBody().getReleaseDate());
-        assertEquals(120L, response.getBody().getDuration());
-        assertEquals("Test Film", response.getBody().getDescription());
+        mockMvc.perform(get("/films"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].name").value("Test Film"))
+                .andExpect(jsonPath("$[0].description").value("Test description"))
+                .andExpect(jsonPath("$[0].releaseDate").value("2000-01-01"))
+                .andExpect(jsonPath("$[0].duration").value(120));
+    }
 
-        Long createdFilmId = response.getBody().getId();
-        assertNotNull(createdFilmId);
+    @Test
+    public void testFindById() throws Exception {
+        when(filmService.findById(1L)).thenReturn(film);
 
-        // Обновление фильма
-        newFilm.setId(createdFilmId);
-        restTemplate.put(url, newFilm);
+        mockMvc.perform(get("/films/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.name").value("Test Film"))
+                .andExpect(jsonPath("$.description").value("Test description"))
+                .andExpect(jsonPath("$.releaseDate").value("2000-01-01"))
+                .andExpect(jsonPath("$.duration").value(120));
+    }
 
-        // Проверка обновленного фильма
-        ResponseEntity<Film[]> updatedResponse = restTemplate.getForEntity(url, Film[].class);
+    @Test
+    public void testCreateFilm() throws Exception {
+        when(filmService.create(any(Film.class))).thenReturn(film);
 
-        assertEquals(HttpStatus.OK, updatedResponse.getStatusCode());
-        assertNotNull(updatedResponse.getBody());
+        mockMvc.perform(post("/films")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Test Film\", \"description\":\"Test description\", \"releaseDate\":\"2000-01-01\", \"duration\":120}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.name").value("Test Film"))
+                .andExpect(jsonPath("$.description").value("Test description"))
+                .andExpect(jsonPath("$.releaseDate").value("2000-01-01"))
+                .andExpect(jsonPath("$.duration").value(120));
+    }
 
-        Film[] films = updatedResponse.getBody();
-        assertTrue(films.length > 0);
+    @Test
+    public void testUpdateFilm() throws Exception {
+        film.setName("Updated Film");
+        film.setDescription("Updated description");
 
-        Film updatedFilm = films[0];
+        when(filmService.update(any(Film.class))).thenReturn(film);
 
-        assertEquals("Test Film - new", updatedFilm.getName());
-        assertEquals("Test Film - new", updatedFilm.getDescription());
-        assertEquals(LocalDate.of(2010, 1, 1), updatedFilm.getReleaseDate());
-        assertEquals(200L, updatedFilm.getDuration());
+        mockMvc.perform(put("/films")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"id\":1, \"name\":\"Updated Film\", \"description\":\"Updated description\", \"releaseDate\":\"2000-01-01\", \"duration\":120}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.name").value("Updated Film"))
+                .andExpect(jsonPath("$.description").value("Updated description"))
+                .andExpect(jsonPath("$.releaseDate").value("2000-01-01"))
+                .andExpect(jsonPath("$.duration").value(120));
+    }
+
+    @Test
+    public void testDeleteFilm() throws Exception {
+        when(filmService.delete(1L)).thenReturn(film);
+
+        mockMvc.perform(delete("/films/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.name").value("Test Film"));
+    }
+
+    @Test
+    public void testGetTopFilms() throws Exception {
+        when(filmService.getTopFilms(10)).thenReturn(Collections.singletonList(film));
+
+        mockMvc.perform(get("/films/popular?count=10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].name").value("Test Film"))
+                .andExpect(jsonPath("$[0].description").value("Test description"))
+                .andExpect(jsonPath("$[0].releaseDate").value("2000-01-01"))
+                .andExpect(jsonPath("$[0].duration").value(120));
     }
 }
