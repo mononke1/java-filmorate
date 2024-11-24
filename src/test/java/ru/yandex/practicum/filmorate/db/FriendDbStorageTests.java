@@ -181,7 +181,7 @@ class FriendDbStorageTests {
         User createdUser = userStorage.create(user);
 
         assertThatThrownBy(() -> friendStorage.addFriend(createdUser.getId(), createdUser.getId()))
-                .isInstanceOf( ValidationException.class)
+                .isInstanceOf(ValidationException.class)
                 .hasMessageContaining("Нельзя добавить самого себя в друзья");
     }
 

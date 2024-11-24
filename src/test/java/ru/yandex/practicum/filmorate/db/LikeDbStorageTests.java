@@ -145,7 +145,7 @@ class LikeDbStorageTests {
         User createdUser = userStorage.create(user);
 
         assertThatThrownBy(() -> likeStorage.removeLike(createdFilm.getId(), createdUser.getId()))
-                .isInstanceOf( NotFoundException.class)
+                .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining("Лайк от пользователя с ID " + createdUser.getId() + " к фильму с ID " + createdFilm.getId() + " не найден.");
     }
 
