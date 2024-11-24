@@ -104,9 +104,9 @@ public class FilmDbStorage implements FilmStorage {
             throw new ValidationException("Фильм не может быть null.");
         }
         validateDate(film);
-        String INSERT_QUERY = "INSERT INTO films(film_name, description, duration, release_date, rating_id) " +
+        String insertQuery = "INSERT INTO films(film_name, description, duration, release_date, rating_id) " +
                 "VALUES (?, ?, ?, ?, ?)";
-        long id = insert(INSERT_QUERY,
+        long id = insert(insertQuery,
                 film.getName(),
                 film.getDescription(),
                 film.getDuration(),
@@ -131,10 +131,10 @@ public class FilmDbStorage implements FilmStorage {
             throw new ValidationException("Id должен быть указан.");
         }
 
-        String UPDATE_QUERY = "UPDATE films SET film_name = ?, description = ?, duration = ?, release_date = ?, rating_id = ? WHERE film_id = ?";
+        String updateQuery = "UPDATE films SET film_name = ?, description = ?, duration = ?, release_date = ?, rating_id = ? WHERE film_id = ?";
 
         int rowsUpdated = jdbc.update(
-                UPDATE_QUERY,
+                updateQuery,
                 film.getName(),
                 film.getDescription(),
                 film.getDuration(),

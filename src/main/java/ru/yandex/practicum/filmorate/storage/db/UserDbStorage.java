@@ -63,8 +63,8 @@ public class UserDbStorage implements UserStorage {
             log.error("Попытка создать пользователя с null значением");
             throw new ValidationException("Пользователь не может быть null.");
         }
-        String INSERT_QUERY = "INSERT INTO users(user_name, login, email, birthday) VALUES (?, ?, ?, ?)";
-        long id = insert(INSERT_QUERY,
+        String insertQuery = "INSERT INTO users(user_name, login, email, birthday) VALUES (?, ?, ?, ?)";
+        long id = insert(insertQuery,
                 user.getName(),
                 user.getLogin(),
                 user.getEmail(),
@@ -84,9 +84,9 @@ public class UserDbStorage implements UserStorage {
             throw new ValidationException("Ошибка при обновлении: ID пользователя не указан.");
         }
 
-        String UPDATE_QUERY = "UPDATE users SET user_name = ?, login = ?, email = ?, birthday = ? WHERE user_id = ?";
+        String updateQuery = "UPDATE users SET user_name = ?, login = ?, email = ?, birthday = ? WHERE user_id = ?";
         int rowsUpdated = jdbc.update(
-                UPDATE_QUERY,
+                updateQuery,
                 user.getName(),
                 user.getLogin(),
                 user.getEmail(),
