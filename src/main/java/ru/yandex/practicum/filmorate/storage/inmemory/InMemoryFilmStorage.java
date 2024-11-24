@@ -1,16 +1,18 @@
-package ru.yandex.practicum.filmorate.storage.film;
+package ru.yandex.practicum.filmorate.storage.inmemory;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.interfaces.FilmStorage;
 import ru.yandex.practicum.filmorate.util.DateUtil;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -71,6 +73,14 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Film findById(Long id) {
         return Optional.ofNullable(films.get(id))
                 .orElseThrow(() -> new NotFoundException("Фильм с ID " + id + " не найден."));
+    }
+
+    @Override
+    public Collection<Film> getTopFilms(int limit) {
+        return findAll().stream()
+                .sorted((f1, f2) -> Integer.compare(f2.getLikes().size(), f1.getLikes().size()))
+                .limit(limit)
+                .collect(Collectors.toList());
     }
 
     private void updateFilmFields(Film existingFilm, Film newFilm) {
