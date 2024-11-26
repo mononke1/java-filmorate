@@ -4,10 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.stereotype.Service;
 import jakarta.validation.constraints.*;
 
-@Service
 @Getter
 @Setter
 @NoArgsConstructor
@@ -15,8 +13,8 @@ import jakarta.validation.constraints.*;
 public class RatingMpa {
 
     @Positive
-    protected int id;
+    private int id;
 
     @NotBlank
-    protected String name;
+    private String name;
 }

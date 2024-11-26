@@ -42,8 +42,7 @@ public class FilmDbStorage implements FilmStorage {
         List<Film> films = jdbc.query(query, mapper);
         log.debug("Найдено фильмов: {}", films.size());
         setGenreForFilm(films);
-        setLikes(films);
-        log.debug("Фильмы после установки жанров и лайков: {}", films);
+        log.debug("Фильмы после установки жанров: {}", films);
         return films;
     }
 
@@ -68,12 +67,6 @@ public class FilmDbStorage implements FilmStorage {
         List<Genre> genres = jdbc.query(queryForGenre, genreRowMapper, id);
         film.setGenres(new HashSet<>(genres));
         log.debug("Жанры фильма с ID {}: {}", id, genres);
-
-        String queryForLike = "SELECT user_id FROM likes WHERE film_id = ?";
-        List<Long> likes = jdbc.queryForList(queryForLike, Long.class, id);
-        film.setLikes(new HashSet<>(likes));
-        log.debug("Лайки фильма с ID {}: {}", id, likes);
-
         return film;
     }
 
@@ -90,8 +83,7 @@ public class FilmDbStorage implements FilmStorage {
         List<Film> films = jdbc.query(sql, mapper, limit);
         log.debug("Топ фильмов получен: {}", films);
         setGenreForFilm(films);
-        setLikes(films);
-        log.debug("Топ фильмов после установки жанров и лайков: {}", films);
+        log.debug("Топ фильмов после установки жанров: {}", films);
         return films;
     }
 
@@ -116,7 +108,6 @@ public class FilmDbStorage implements FilmStorage {
         log.debug("Фильм создан с ID {}", id);
 
         insertGenres(film);
-        insertLikes(film);
 
         log.info("Фильм успешно создан: {}", film);
         return film;
@@ -154,7 +145,6 @@ public class FilmDbStorage implements FilmStorage {
         log.debug("Жанры фильма с ID {} обновлены", film.getId());
 
         jdbc.update("DELETE FROM likes WHERE film_id = ?", film.getId());
-        insertLikes(film);
         log.debug("Лайки фильма с ID {} обновлены", film.getId());
 
         log.info("Фильм с ID {} успешно обновлен", film.getId());
@@ -257,20 +247,6 @@ public class FilmDbStorage implements FilmStorage {
         log.debug("Жанры вставлены для фильма с ID {}: {}", film.getId(), film.getGenres());
     }
 
-    private void insertLikes(Film film) {
-        if (film.getLikes() == null || film.getLikes().isEmpty()) {
-            log.debug("Лайки не указаны для фильма с ID {}, пропуск вставки лайков", film.getId());
-            return;
-        }
-
-        String query = "INSERT INTO likes(film_id, user_id) VALUES (?, ?)";
-        List<Object[]> batchArgs = film.getLikes().stream()
-                .map(userId -> new Object[]{film.getId(), userId})
-                .collect(Collectors.toList());
-        jdbc.batchUpdate(query, batchArgs);
-        log.debug("Лайки вставлены для фильма с ID {}: {}", film.getId(), film.getLikes());
-    }
-
     private long insert(String query, Object... params) {
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
         jdbc.update(connection -> {
@@ -290,38 +266,5 @@ public class FilmDbStorage implements FilmStorage {
             log.error("Не удалось получить сгенерированный ключ после вставки");
             throw new InternalServerException("Не удалось сохранить данные.");
         }
-    }
-
-    private void setLikes(List<Film> films) {
-        if (films.isEmpty()) {
-            log.debug("Список фильмов пуст, установка лайков не требуется");
-            return;
-        }
-
-        List<Long> filmIds = films.stream()
-                .map(Film::getId)
-                .collect(Collectors.toList());
-
-        String sql = "SELECT film_id, user_id FROM likes WHERE film_id IN (:filmIds)";
-
-        Map<Long, Film> filmMap = films.stream()
-                .collect(Collectors.toMap(Film::getId, Function.identity()));
-
-        MapSqlParameterSource parameters = new MapSqlParameterSource();
-        parameters.addValue("filmIds", filmIds);
-
-        namedParameterJdbcTemplate.query(sql, parameters, rs -> {
-            Long filmId = rs.getLong("film_id");
-            Long userId = rs.getLong("user_id");
-
-            Film film = filmMap.get(filmId);
-            if (film != null) {
-                if (film.getLikes() == null) {
-                    film.setLikes(new HashSet<>());
-                }
-                film.getLikes().add(userId);
-            }
-        });
-        log.debug("Лайки установлены для фильмов: {}", filmIds);
     }
 }

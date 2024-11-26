@@ -26,69 +26,20 @@ import java.util.*;
 @Import({FilmDbStorage.class, FilmRowMapper.class, GenreRowMapper.class, MpaRatingRowMapper.class})
 class FilmDbStorageTests {
 
-    @Autowired
     private FilmDbStorage filmStorage;
+
+    @Autowired
+    public FilmDbStorageTests(FilmDbStorage filmStorage) {
+        this.filmStorage = filmStorage;
+    }
+
+    private Film film1;
+    private Film film2;
 
     @BeforeEach
     @Sql({"/schema.sql", "/data.sql"})
     void setUp() {
-    }
-
-    @Test
-    public void testCreateFilm() {
-        Film film = new Film();
-        film.setName("Inception");
-        film.setDescription("A mind-bending thriller");
-        film.setReleaseDate(LocalDate.of(2010, 7, 16));
-        film.setDuration(148L);
-        film.setMpa(new RatingMpa(1, "G"));
-        film.setGenres(new HashSet<>(Arrays.asList(new Genre(1, "Комедия"), new Genre(2, "Драма"))));
-
-        Film createdFilm = filmStorage.create(film);
-
-        assertThat(createdFilm.getId()).isNotNull();
-        assertThat(createdFilm.getName()).isEqualTo("Inception");
-        assertThat(createdFilm.getGenres()).hasSize(2);
-        assertThat(createdFilm.getGenres()).containsExactlyInAnyOrder(
-                new Genre(1, "Комедия"),
-                new Genre(2, "Драма")
-        );
-    }
-
-    @Test
-    public void testFindFilmById() {
-        Film film = new Film();
-        film.setName("Test Film");
-        film.setDescription("Test Description");
-        film.setReleaseDate(LocalDate.of(2021, 1, 1));
-        film.setDuration(100L);
-        film.setMpa(new RatingMpa(1, "G"));
-        film.setGenres(new HashSet<>(Arrays.asList(
-                new Genre(1, "Комедия"),
-                new Genre(2, "Драма")
-        )));
-
-        // Сохраняем фильм и получаем сгенерированный ID
-        Film createdFilm = filmStorage.create(film);
-        Long filmId = createdFilm.getId();
-
-        // Ищем фильм по ID
-        Film foundFilm = filmStorage.findById(filmId);
-
-        // Проверяем, что найденный фильм соответствует созданному
-        assertThat(foundFilm).isNotNull();
-        assertThat(foundFilm.getId()).isEqualTo(filmId);
-        assertThat(foundFilm.getName()).isEqualTo("Test Film");
-        assertThat(foundFilm.getGenres()).hasSize(2);
-        assertThat(foundFilm.getGenres()).containsExactlyInAnyOrder(
-                new Genre(1, "Комедия"),
-                new Genre(2, "Драма")
-        );
-    }
-
-    @Test
-    public void testFindAllFilms() {
-        Film film1 = new Film();
+        film1 = new Film();
         film1.setName("Film One");
         film1.setDescription("First test film");
         film1.setReleaseDate(LocalDate.of(2020, 1, 1));
@@ -99,9 +50,7 @@ class FilmDbStorageTests {
                 new Genre(2, "Драма")
         )));
 
-        filmStorage.create(film1);
-
-        Film film2 = new Film();
+        film2 = new Film();
         film2.setName("Film Two");
         film2.setDescription("Second test film");
         film2.setReleaseDate(LocalDate.of(2021, 2, 2));
@@ -110,7 +59,43 @@ class FilmDbStorageTests {
         film2.setGenres(new HashSet<>(Collections.singletonList(
                 new Genre(3, "Мультфильм")
         )));
+    }
 
+    @Test
+    public void testCreateFilm() {
+        Film createdFilm = filmStorage.create(film1);
+
+        assertThat(createdFilm.getId()).isNotNull();
+        assertThat(createdFilm.getName()).isEqualTo(film1.getName());
+        assertThat(createdFilm.getGenres()).hasSize(2);
+        assertThat(createdFilm.getGenres()).containsExactlyInAnyOrder(
+                new Genre(1, "Комедия"),
+                new Genre(2, "Драма")
+        );
+    }
+
+    @Test
+    public void testFindFilmById() {
+        Film createdFilm = filmStorage.create(film1);
+        Long filmId = createdFilm.getId();
+
+        Film foundFilm = filmStorage.findById(filmId);
+
+        assertThat(foundFilm).isNotNull();
+        assertThat(foundFilm.getId()).isEqualTo(filmId);
+        assertThat(foundFilm.getName()).isEqualTo(film1.getName());
+
+        assertThat(foundFilm.getGenres()).isNotNull();
+        assertThat(foundFilm.getGenres()).hasSize(2);
+        assertThat(foundFilm.getGenres()).containsExactlyInAnyOrder(
+                new Genre(1, "Комедия"),
+                new Genre(2, "Драма")
+        );
+    }
+
+    @Test
+    public void testFindAllFilms() {
+        filmStorage.create(film1);
         filmStorage.create(film2);
 
         List<Film> films = filmStorage.findAll();
@@ -118,20 +103,12 @@ class FilmDbStorageTests {
         assertThat(films).isNotEmpty();
         assertThat(films.size()).isEqualTo(2);
 
-        assertThat(films).extracting("name").containsExactlyInAnyOrder("Film One", "Film Two");
+        assertThat(films).extracting("name").containsExactlyInAnyOrder(film1.getName(), film2.getName());
     }
 
     @Test
     public void testUpdateFilm() {
-        Film film = new Film();
-        film.setName("Original Name");
-        film.setDescription("Original Description");
-        film.setReleaseDate(LocalDate.of(2000, 1, 1));
-        film.setDuration(120L);
-        film.setMpa(new RatingMpa(1, "G"));
-        film.setGenres(new HashSet<>(Arrays.asList(new Genre(1, "Комедия"))));
-
-        Film createdFilm = filmStorage.create(film);
+        Film createdFilm = filmStorage.create(film1);
 
         createdFilm.setName("Updated Name");
         createdFilm.setDescription("Updated Description");
@@ -153,14 +130,7 @@ class FilmDbStorageTests {
 
     @Test
     public void testDeleteFilm() {
-        Film film = new Film();
-        film.setName("Film to Delete");
-        film.setDescription("This film will be deleted");
-        film.setReleaseDate(LocalDate.of(2005, 5, 5));
-        film.setDuration(100L);
-        film.setMpa(new RatingMpa(1, "G"));
-
-        Film createdFilm = filmStorage.create(film);
+        Film createdFilm = filmStorage.create(film1);
 
         Film deletedFilm = filmStorage.delete(createdFilm.getId());
 

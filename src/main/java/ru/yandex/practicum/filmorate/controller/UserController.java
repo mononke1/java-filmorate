@@ -17,32 +17,32 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public Collection<User> findAll() {
+    public Collection<User> getAllUsers() {
         log.info("Получен запрос на получение всех пользователей.");
-        return userService.findAll();
+        return userService.getAllUsers();
     }
 
     @GetMapping("/{id}")
-    public User findById(@PathVariable Long id) {
+    public User getUserById(@PathVariable Long id) {
         log.info("Получен запрос на получение пользователя с ID {}.", id);
-        return userService.findById(id);
+        return userService.getUserById(id);
     }
 
     @PostMapping
-    public User create(@Valid @RequestBody User user) {
+    public User createUser(@Valid @RequestBody User user) {
         log.info("Получен запрос на создание нового пользователя: {}", user);
-        return userService.create(user);
+        return userService.createUser(user);
     }
 
     @PutMapping
-    public User update(@Valid @RequestBody User newUser) {
+    public User updateUser(@Valid @RequestBody User newUser) {
         log.info("Получен запрос на обновление пользователя с ID {}: {}", newUser.getId(), newUser);
-        return userService.update(newUser);
+        return userService.updateUser(newUser);
     }
 
     @DeleteMapping("/{id}")
-    public User delete(@PathVariable Long id) {
+    public User deleteUser(@PathVariable Long id) {
         log.info("Получен запрос на удаление пользователя с ID {}.", id);
-        return userService.delete(id);
+        return userService.deleteUser(id);
     }
 }

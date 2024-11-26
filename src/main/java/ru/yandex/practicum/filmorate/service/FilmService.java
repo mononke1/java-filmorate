@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -10,36 +9,32 @@ import ru.yandex.practicum.filmorate.storage.interfaces.FilmStorage;
 import java.util.Collection;
 
 @Service
-@Slf4j
 public class FilmService {
-    private final FilmStorage filmStorage;
-
     @Autowired
-    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage) {
-        this.filmStorage = filmStorage;
-    }
+    @Qualifier("filmDbStorage")
+    private FilmStorage filmStorage;
 
     public Collection<Film> getTopFilms(int limit) {
         return filmStorage.getTopFilms(limit);
     }
 
-    public Collection<Film> findAll() {
+    public Collection<Film> getAllFilms() {
         return filmStorage.findAll();
     }
 
-    public Film create(Film film) {
+    public Film createFilm(Film film) {
         return filmStorage.create(film);
     }
 
-    public Film update(Film newFilm) {
+    public Film updateFilm(Film newFilm) {
         return filmStorage.update(newFilm);
     }
 
-    public Film delete(Long id) {
+    public Film deleteFilm(Long id) {
         return filmStorage.delete(id);
     }
 
-    public Film findById(Long id) {
+    public Film getFilmById(Long id) {
         return filmStorage.findById(id);
     }
 }

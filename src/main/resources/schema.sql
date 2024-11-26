@@ -33,6 +33,9 @@ CREATE TABLE IF NOT EXISTS users (
     birthday DATE
 );
 
+create unique index if not exists USER_EMAIL_UINDEX on USERS (email);
+create unique index if not exists USER_LOGIN_UINDEX on USERS (login);
+
 CREATE TABLE IF NOT EXISTS film_genres (
     film_id INT NOT NULL REFERENCES films (film_id) ON DELETE RESTRICT ON UPDATE CASCADE,
     genre_id INT NOT NULL REFERENCES genres (genre_id) ON DELETE RESTRICT ON UPDATE CASCADE

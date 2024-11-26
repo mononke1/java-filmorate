@@ -20,21 +20,28 @@ import java.util.List;
 @Import({MpaDbStorage.class, MpaRatingRowMapper.class})
 class MpaDbStorageTests {
 
-    @Autowired
-    private MpaDbStorage mpaStorage;
+    private final MpaDbStorage mpaStorage;
+    private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    private JdbcTemplate jdbcTemplate;
+    public MpaDbStorageTests(MpaDbStorage mpaStorage, JdbcTemplate jdbcTemplate) {
+        this.mpaStorage = mpaStorage;
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     @BeforeEach
     public void setUp() {
         jdbcTemplate.update("DELETE FROM rating_mpa");
 
-        jdbcTemplate.update("INSERT INTO rating_mpa (rating_id, rating_name) VALUES (1, 'G')");
-        jdbcTemplate.update("INSERT INTO rating_mpa (rating_id, rating_name) VALUES (2, 'PG')");
-        jdbcTemplate.update("INSERT INTO rating_mpa (rating_id, rating_name) VALUES (3, 'PG-13')");
-        jdbcTemplate.update("INSERT INTO rating_mpa (rating_id, rating_name) VALUES (4, 'R')");
-        jdbcTemplate.update("INSERT INTO rating_mpa (rating_id, rating_name) VALUES (5, 'NC-17')");
+        insertRatingMpa(1, "G");
+        insertRatingMpa(2, "PG");
+        insertRatingMpa(3, "PG-13");
+        insertRatingMpa(4, "R");
+        insertRatingMpa(5, "NC-17");
+    }
+
+    private void insertRatingMpa(int id, String name) {
+        jdbcTemplate.update("INSERT INTO rating_mpa (rating_id, rating_name) VALUES (?, ?)", id, name);
     }
 
     @Test
@@ -42,13 +49,9 @@ class MpaDbStorageTests {
         List<RatingMpa> ratings = mpaStorage.findAll();
 
         assertThat(ratings).isNotNull();
-        assertThat(ratings.size()).isEqualTo(5);
-        assertThat(ratings).extracting("name").containsExactly(
-                "G",
-                "PG",
-                "PG-13",
-                "R",
-                "NC-17"
+        assertThat(ratings).hasSize(5);
+        assertThat(ratings).extracting(RatingMpa::getName).containsExactly(
+                "G", "PG", "PG-13", "R", "NC-17"
         );
     }
 

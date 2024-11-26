@@ -21,12 +21,12 @@ public class MpaController {
     @GetMapping
     public List<RatingMpa> getAllRatings() {
         log.info("Получен запрос на получение всех рейтингов MPA.");
-        return mpaService.findAll();
+        return mpaService.getAllRatings();
     }
 
     @GetMapping("/{id}")
     public RatingMpa getRatingById(@PathVariable int id) {
         log.info("Получен запрос на получение рейтинга MPA с ID {}", id);
-        return mpaService.findById(id);
+        return mpaService.getRatingById(id);
     }
 }

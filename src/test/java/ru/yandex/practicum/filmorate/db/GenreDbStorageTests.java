@@ -20,22 +20,29 @@ import java.util.List;
 @Import({GenreDbStorage.class, GenreRowMapper.class})
 class GenreDbStorageTests {
 
-    @Autowired
-    private GenreDbStorage genreStorage;
+    private final GenreDbStorage genreStorage;
+    private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    private JdbcTemplate jdbcTemplate;
+    public GenreDbStorageTests(GenreDbStorage genreStorage, JdbcTemplate jdbcTemplate) {
+        this.genreStorage = genreStorage;
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     @BeforeEach
     public void setUp() {
         jdbcTemplate.update("DELETE FROM genres");
 
-        jdbcTemplate.update("INSERT INTO genres (genre_id, genre_name) VALUES (1, 'Комедия')");
-        jdbcTemplate.update("INSERT INTO genres (genre_id, genre_name) VALUES (2, 'Драма')");
-        jdbcTemplate.update("INSERT INTO genres (genre_id, genre_name) VALUES (3, 'Мультфильм')");
-        jdbcTemplate.update("INSERT INTO genres (genre_id, genre_name) VALUES (4, 'Триллер')");
-        jdbcTemplate.update("INSERT INTO genres (genre_id, genre_name) VALUES (5, 'Документальный')");
-        jdbcTemplate.update("INSERT INTO genres (genre_id, genre_name) VALUES (6, 'Боевик')");
+        insertGenre(1, "Комедия");
+        insertGenre(2, "Драма");
+        insertGenre(3, "Мультфильм");
+        insertGenre(4, "Триллер");
+        insertGenre(5, "Документальный");
+        insertGenre(6, "Боевик");
+    }
+
+    private void insertGenre(int id, String name) {
+        jdbcTemplate.update("INSERT INTO genres (genre_id, genre_name) VALUES (?, ?)", id, name);
     }
 
     @Test

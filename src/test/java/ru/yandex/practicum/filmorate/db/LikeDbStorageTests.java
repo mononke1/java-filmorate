@@ -37,17 +37,21 @@ import java.util.*;
 })
 class LikeDbStorageTests {
 
-    @Autowired
-    private LikeDbStorage likeStorage;
+    private final LikeDbStorage likeStorage;
+    private final FilmDbStorage filmStorage;
+    private final UserDbStorage userStorage;
+    private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    private FilmDbStorage filmStorage;
-
-    @Autowired
-    private UserDbStorage userStorage;
-
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    public LikeDbStorageTests(LikeDbStorage likeStorage,
+                              FilmDbStorage filmStorage,
+                              UserDbStorage userStorage,
+                              JdbcTemplate jdbcTemplate) {
+        this.likeStorage = likeStorage;
+        this.filmStorage = filmStorage;
+        this.userStorage = userStorage;
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     @BeforeEach
     public void setUp() {
@@ -58,164 +62,93 @@ class LikeDbStorageTests {
         jdbcTemplate.update("DELETE FROM genres");
         jdbcTemplate.update("DELETE FROM rating_mpa");
 
-        jdbcTemplate.update("INSERT INTO genres (genre_id, genre_name) VALUES (1, 'Комедия')");
-        jdbcTemplate.update("INSERT INTO genres (genre_id, genre_name) VALUES (2, 'Драма')");
-        jdbcTemplate.update("INSERT INTO rating_mpa (rating_id, rating_name) VALUES (1, 'G')");
-        jdbcTemplate.update("INSERT INTO rating_mpa (rating_id, rating_name) VALUES (2, 'PG')");
+        insertGenre(1, "Комедия");
+        insertGenre(2, "Драма");
+        insertRatingMpa(1, "G");
+        insertRatingMpa(2, "PG");
     }
 
-    @Test
-    public void testAddLike() {
-        Film film = new Film();
-        film.setName("Test Film");
-        film.setDescription("A test film");
-        film.setReleaseDate(LocalDate.of(2020, 1, 1));
-        film.setDuration(120L);
-        film.setMpa(new RatingMpa(1, "G"));
-        film.setGenres(new HashSet<>(Arrays.asList(
-                new Genre(1, "Комедия"),
-                new Genre(2, "Драма")
-        )));
-        Film createdFilm = filmStorage.create(film);
-
-        User user = new User();
-        user.setName("Test User");
-        user.setLogin("testuser");
-        user.setEmail("testuser@example.com");
-        user.setBirthday(LocalDate.of(1990, 1, 1));
-        User createdUser = userStorage.create(user);
-
-        Film updatedFilm = likeStorage.addLike(createdFilm.getId(), createdUser.getId());
-
-        assertThat(updatedFilm.getLikes()).contains(createdUser.getId());
-
-        Film filmFromDb = filmStorage.findById(createdFilm.getId());
-        assertThat(filmFromDb.getLikes()).containsExactly(createdUser.getId());
+    private void insertGenre(int id, String name) {
+        jdbcTemplate.update("INSERT INTO genres (genre_id, genre_name) VALUES (?, ?)", id, name);
     }
 
-    @Test
-    public void testRemoveLike() {
-        Film film = new Film();
-        film.setName("Test Film");
-        film.setDescription("A test film");
-        film.setReleaseDate(LocalDate.of(2020, 1, 1));
-        film.setDuration(120L);
-        film.setMpa(new RatingMpa(1, "G"));
-        film.setGenres(new HashSet<>(Collections.singletonList(
-                new Genre(1, "Комедия")
-        )));
-        Film createdFilm = filmStorage.create(film);
+    private void insertRatingMpa(int id, String name) {
+        jdbcTemplate.update("INSERT INTO rating_mpa (rating_id, rating_name) VALUES (?, ?)", id, name);
+    }
 
+    private User createUser(String name, String login, String email, LocalDate birthday) {
         User user = new User();
-        user.setName("Test User");
-        user.setLogin("testuser");
-        user.setEmail("testuser@example.com");
-        user.setBirthday(LocalDate.of(1990, 1, 1));
-        User createdUser = userStorage.create(user);
+        user.setName(name);
+        user.setLogin(login);
+        user.setEmail(email);
+        user.setBirthday(birthday);
+        return userStorage.create(user);
+    }
 
-        likeStorage.addLike(createdFilm.getId(), createdUser.getId());
-
-        Film updatedFilm = likeStorage.removeLike(createdFilm.getId(), createdUser.getId());
-
-        assertThat(updatedFilm.getLikes()).doesNotContain(createdUser.getId());
-
-        Film filmFromDb = filmStorage.findById(createdFilm.getId());
-        assertThat(filmFromDb.getLikes()).isEmpty();
+    private Film createFilm(String name, String description, LocalDate releaseDate, Long duration, RatingMpa mpa, Set<Genre> genres) {
+        Film film = new Film();
+        film.setName(name);
+        film.setDescription(description);
+        film.setReleaseDate(releaseDate);
+        film.setDuration(duration);
+        film.setMpa(mpa);
+        film.setGenres(genres);
+        return filmStorage.create(film);
     }
 
     @Test
     public void testRemoveLikeNotExists() {
-        Film film = new Film();
-        film.setName("Test Film");
-        film.setDescription("A test film");
-        film.setReleaseDate(LocalDate.of(2020, 1, 1));
-        film.setDuration(120L);
-        film.setMpa(new RatingMpa(1, "G"));
-        film.setGenres(new HashSet<>(Collections.singletonList(
-                new Genre(1, "Комедия")
-        )));
-        Film createdFilm = filmStorage.create(film);
+        Film film = createFilm("Test Film", "A test film", LocalDate.of(2020, 1, 1), 120L, new RatingMpa(1, "G"),
+                new HashSet<>(Collections.singletonList(new Genre(1, "Комедия"))));
+        User user = createUser("Test User", "testuser", "testuser@example.com", LocalDate.of(1990, 1, 1));
 
-        User user = new User();
-        user.setName("Test User");
-        user.setLogin("testuser");
-        user.setEmail("testuser@example.com");
-        user.setBirthday(LocalDate.of(1990, 1, 1));
-        User createdUser = userStorage.create(user);
-
-        assertThatThrownBy(() -> likeStorage.removeLike(createdFilm.getId(), createdUser.getId()))
+        assertThatThrownBy(() -> likeStorage.removeLike(film.getId(), user.getId()))
                 .isInstanceOf(NotFoundException.class)
-                .hasMessageContaining("Лайк от пользователя с ID " + createdUser.getId() + " к фильму с ID " + createdFilm.getId() + " не найден.");
+                .hasMessageContaining("Лайк от пользователя с ID " + user.getId() + " к фильму с ID " + film.getId() + " не найден.");
     }
 
     @Test
     public void testAddLikeFilmNotFound() {
-        User user = new User();
-        user.setName("Test User");
-        user.setLogin("testuser");
-        user.setEmail("testuser@example.com");
-        user.setBirthday(LocalDate.of(1990, 1, 1));
-        User createdUser = userStorage.create(user);
+        User user = createUser("Test User", "testuser", "testuser@example.com", LocalDate.of(1990, 1, 1));
 
         Long nonExistentFilmId = 999L;
 
-        assertThatThrownBy(() -> likeStorage.addLike(nonExistentFilmId, createdUser.getId()))
+        assertThatThrownBy(() -> likeStorage.addLike(nonExistentFilmId, user.getId()))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining("Фильм с ID " + nonExistentFilmId + " не найден.");
     }
 
     @Test
     public void testAddLikeUserNotFound() {
-        Film film = new Film();
-        film.setName("Test Film");
-        film.setDescription("A test film");
-        film.setReleaseDate(LocalDate.of(2020, 1, 1));
-        film.setDuration(120L);
-        film.setMpa(new RatingMpa(1, "G"));
-        film.setGenres(new HashSet<>(Collections.singletonList(
-                new Genre(1, "Комедия")
-        )));
-        Film createdFilm = filmStorage.create(film);
+        Film film = createFilm("Test Film", "A test film", LocalDate.of(2020, 1, 1), 120L, new RatingMpa(1, "G"),
+                new HashSet<>(Collections.singletonList(new Genre(1, "Комедия"))));
 
         Long nonExistentUserId = 999L;
 
-        assertThatThrownBy(() -> likeStorage.addLike(createdFilm.getId(), nonExistentUserId))
+        assertThatThrownBy(() -> likeStorage.addLike(film.getId(), nonExistentUserId))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining("Пользователь с ID " + nonExistentUserId + " не найден.");
     }
 
     @Test
     public void testRemoveLikeFilmNotFound() {
-        User user = new User();
-        user.setName("Test User");
-        user.setLogin("testuser");
-        user.setEmail("testuser@example.com");
-        user.setBirthday(LocalDate.of(1990, 1, 1));
-        User createdUser = userStorage.create(user);
+        User user = createUser("Test User", "testuser", "testuser@example.com", LocalDate.of(1990, 1, 1));
 
         Long nonExistentFilmId = 999L;
 
-        assertThatThrownBy(() -> likeStorage.removeLike(nonExistentFilmId, createdUser.getId()))
+        assertThatThrownBy(() -> likeStorage.removeLike(nonExistentFilmId, user.getId()))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining("Фильм с ID " + nonExistentFilmId + " не найден.");
     }
 
     @Test
     public void testRemoveLikeUserNotFound() {
-        Film film = new Film();
-        film.setName("Test Film");
-        film.setDescription("A test film");
-        film.setReleaseDate(LocalDate.of(2020, 1, 1));
-        film.setDuration(120L);
-        film.setMpa(new RatingMpa(1, "G"));
-        film.setGenres(new HashSet<>(Collections.singletonList(
-                new Genre(1, "Комедия")
-        )));
-        Film createdFilm = filmStorage.create(film);
+        Film film = createFilm("Test Film", "A test film", LocalDate.of(2020, 1, 1), 120L, new RatingMpa(1, "G"),
+                new HashSet<>(Collections.singletonList(new Genre(1, "Комедия"))));
 
         Long nonExistentUserId = 999L;
 
-        assertThatThrownBy(() -> likeStorage.removeLike(createdFilm.getId(), nonExistentUserId))
+        assertThatThrownBy(() -> likeStorage.removeLike(film.getId(), nonExistentUserId))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining("Пользователь с ID " + nonExistentUserId + " не найден.");
     }

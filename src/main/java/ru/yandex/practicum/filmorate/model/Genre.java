@@ -5,11 +5,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.stereotype.Service;
 import jakarta.validation.constraints.*;
 
 @Builder(toBuilder = true)
-@Service
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,10 +15,10 @@ import jakarta.validation.constraints.*;
 public class Genre {
 
     @Positive
-    protected int id;
+    private int id;
 
     @NotBlank
-    protected String name;
+    private String name;
 
     @Override
     public boolean equals(Object o) {

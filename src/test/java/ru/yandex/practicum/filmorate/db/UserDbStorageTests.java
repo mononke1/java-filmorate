@@ -21,11 +21,14 @@ import java.util.*;
 @Import({UserDbStorage.class, UserRowMapper.class})
 class UserDbStorageTests {
 
-    @Autowired
-    private UserDbStorage userStorage;
+    private final UserDbStorage userStorage;
+    private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    private JdbcTemplate jdbcTemplate;
+    public UserDbStorageTests(UserDbStorage userStorage, JdbcTemplate jdbcTemplate) {
+        this.userStorage = userStorage;
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     @BeforeEach
     public void setUp() {
@@ -34,15 +37,18 @@ class UserDbStorageTests {
         jdbcTemplate.update("DELETE FROM users");
     }
 
+    private User createUser(String name, String login, String email, LocalDate birthday) {
+        User user = new User();
+        user.setName(name);
+        user.setLogin(login);
+        user.setEmail(email);
+        user.setBirthday(birthday);
+        return userStorage.create(user);
+    }
+
     @Test
     public void testCreateUser() {
-        User user = new User();
-        user.setName("Test User");
-        user.setLogin("testuser");
-        user.setEmail("testuser@example.com");
-        user.setBirthday(LocalDate.of(1990, 1, 1));
-
-        User createdUser = userStorage.create(user);
+        User createdUser = createUser("Test User", "testuser", "testuser@example.com", LocalDate.of(1990, 1, 1));
 
         assertThat(createdUser.getId()).isNotNull();
         assertThat(createdUser.getName()).isEqualTo("Test User");
@@ -53,13 +59,7 @@ class UserDbStorageTests {
 
     @Test
     public void testFindUserById() {
-        User user = new User();
-        user.setName("Test User");
-        user.setLogin("testuser");
-        user.setEmail("testuser@example.com");
-        user.setBirthday(LocalDate.of(1990, 1, 1));
-
-        User createdUser = userStorage.create(user);
+        User createdUser = createUser("Test User", "testuser", "testuser@example.com", LocalDate.of(1990, 1, 1));
 
         User foundUser = userStorage.findById(createdUser.getId());
 
@@ -73,38 +73,19 @@ class UserDbStorageTests {
 
     @Test
     public void testFindAllUsers() {
-        User user1 = new User();
-        user1.setName("User One");
-        user1.setLogin("userone");
-        user1.setEmail("userone@example.com");
-        user1.setBirthday(LocalDate.of(1990, 1, 1));
-
-        User user2 = new User();
-        user2.setName("User Two");
-        user2.setLogin("usertwo");
-        user2.setEmail("usertwo@example.com");
-        user2.setBirthday(LocalDate.of(1991, 2, 2));
-
-        userStorage.create(user1);
-        userStorage.create(user2);
+        User user1 = createUser("User One", "userone", "userone@example.com", LocalDate.of(1990, 1, 1));
+        User user2 = createUser("User Two", "usertwo", "usertwo@example.com", LocalDate.of(1991, 2, 2));
 
         Collection<User> users = userStorage.findAll();
 
         assertThat(users).isNotEmpty();
-        assertThat(users.size()).isEqualTo(2);
-
-        assertThat(users).extracting("login").containsExactlyInAnyOrder("userone", "usertwo");
+        assertThat(users).hasSize(2);
+        assertThat(users).extracting(User::getLogin).containsExactlyInAnyOrder("userone", "usertwo");
     }
 
     @Test
     public void testUpdateUser() {
-        User user = new User();
-        user.setName("Original Name");
-        user.setLogin("originallogin");
-        user.setEmail("original@example.com");
-        user.setBirthday(LocalDate.of(1990, 1, 1));
-
-        User createdUser = userStorage.create(user);
+        User createdUser = createUser("Original Name", "originallogin", "original@example.com", LocalDate.of(1990, 1, 1));
 
         createdUser.setName("Updated Name");
         createdUser.setLogin("updatedlogin");
@@ -121,13 +102,7 @@ class UserDbStorageTests {
 
     @Test
     public void testDeleteUser() {
-        User user = new User();
-        user.setName("User to Delete");
-        user.setLogin("todelete");
-        user.setEmail("todelete@example.com");
-        user.setBirthday(LocalDate.of(1990, 1, 1));
-
-        User createdUser = userStorage.create(user);
+        User createdUser = createUser("User to Delete", "todelete", "todelete@example.com", LocalDate.of(1990, 1, 1));
 
         User deletedUser = userStorage.delete(createdUser.getId());
 
@@ -141,27 +116,15 @@ class UserDbStorageTests {
 
     @Test
     public void testAddAndRetrieveFriends() {
-        User user1 = new User();
-        user1.setName("User One");
-        user1.setLogin("userone");
-        user1.setEmail("userone@example.com");
-        user1.setBirthday(LocalDate.of(1990, 1, 1));
+        User user1 = createUser("User One", "userone", "userone@example.com", LocalDate.of(1990, 1, 1));
+        User user2 = createUser("User Two", "usertwo", "usertwo@example.com", LocalDate.of(1991, 2, 2));
 
-        User user2 = new User();
-        user2.setName("User Two");
-        user2.setLogin("usertwo");
-        user2.setEmail("usertwo@example.com");
-        user2.setBirthday(LocalDate.of(1991, 2, 2));
+        user1.setFriends(new HashSet<>(Collections.singletonList(user2.getId())));
+        userStorage.update(user1);
 
-        User createdUser1 = userStorage.create(user1);
-        User createdUser2 = userStorage.create(user2);
-
-        createdUser1.setFriends(new HashSet<>(Collections.singletonList(createdUser2.getId())));
-        userStorage.update(createdUser1);
-
-        User updatedUser1 = userStorage.findById(createdUser1.getId());
+        User updatedUser1 = userStorage.findById(user1.getId());
 
         assertThat(updatedUser1.getFriends()).isNotNull();
-        assertThat(updatedUser1.getFriends()).containsExactly(createdUser2.getId());
+        assertThat(updatedUser1.getFriends()).containsExactly(user2.getId());
     }
 }
