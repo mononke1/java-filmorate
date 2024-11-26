@@ -42,7 +42,7 @@ public class FilmDbStorage implements FilmStorage {
         List<Film> films = jdbc.query(query, mapper);
         log.debug("Найдено фильмов: {}", films.size());
         setGenreForFilm(films);
-        log.debug("Фильмы после установки жанров: {}", films);
+        log.debug("Фильмы после установки жанров и лайков: {}", films);
         return films;
     }
 
@@ -67,6 +67,11 @@ public class FilmDbStorage implements FilmStorage {
         List<Genre> genres = jdbc.query(queryForGenre, genreRowMapper, id);
         film.setGenres(new HashSet<>(genres));
         log.debug("Жанры фильма с ID {}: {}", id, genres);
+
+        String queryForLike = "SELECT user_id FROM likes WHERE film_id = ?";
+        List<Long> likes = jdbc.queryForList(queryForLike, Long.class, id);
+        log.debug("Лайки фильма с ID {}: {}", id, likes);
+
         return film;
     }
 
@@ -83,7 +88,7 @@ public class FilmDbStorage implements FilmStorage {
         List<Film> films = jdbc.query(sql, mapper, limit);
         log.debug("Топ фильмов получен: {}", films);
         setGenreForFilm(films);
-        log.debug("Топ фильмов после установки жанров: {}", films);
+        log.debug("Топ фильмов после установки жанров и лайков: {}", films);
         return films;
     }
 

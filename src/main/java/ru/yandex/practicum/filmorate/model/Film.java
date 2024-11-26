@@ -23,11 +23,11 @@ public class Film {
     @PastOrPresent(message = "Фильм должен уже быть доступен для просмотра")
     private LocalDate releaseDate;
 
-    @Positive(message = "Продолжительность фильма должна быть положительным числом")
+    @Positive(message = "продолжительность фильма должна быть положительным числом")
     private Long duration;
 
-    private Set<Genre> genres = new HashSet<>();
-
-    @NotBlank(message = "Рейтинг должен быть указан")
+    @NotNull
     private RatingMpa mpa;
+
+    private Set<Genre> genres = new HashSet<>();
 }
