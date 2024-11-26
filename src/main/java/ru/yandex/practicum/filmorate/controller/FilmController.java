@@ -17,33 +17,33 @@ public class FilmController {
     private final FilmService filmService;
 
     @GetMapping
-    public Collection<Film> findAll() {
+    public Collection<Film> getAllFilms() {
         log.info("Получен запрос на получение всех фильмов.");
-        return filmService.findAll();
+        return filmService.getAllFilms();
     }
 
     @GetMapping("/{id}")
-    public Film findById(@PathVariable Long id) {
+    public Film getFilmById(@PathVariable Long id) {
         log.info("Получен запрос на получение фильма с ID {}.", id);
-        return filmService.findById(id);
+        return filmService.getFilmById(id);  // заменено на getFilmById()
     }
 
     @PostMapping
-    public Film create(@Valid @RequestBody Film film) {
+    public Film createFilm(@Valid @RequestBody Film film) {
         log.info("Получен запрос на создание нового фильма: {}", film);
-        return filmService.create(film);
+        return filmService.createFilm(film);
     }
 
     @PutMapping
-    public Film update(@Valid @RequestBody Film newFilm) {
+    public Film updateFilm(@Valid @RequestBody Film newFilm) {
         log.info("Получен запрос на обновление фильма с ID {}: {}", newFilm.getId(), newFilm);
-        return filmService.update(newFilm);
+        return filmService.updateFilm(newFilm);
     }
 
     @DeleteMapping("/{id}")
-    public Film delete(@PathVariable Long id) {
+    public Film deleteFilm(@PathVariable Long id) {
         log.info("Получен запрос на удаление фильма с ID {}.", id);
-        return filmService.delete(id);
+        return filmService.deleteFilm(id);
     }
 
     @GetMapping("/popular")

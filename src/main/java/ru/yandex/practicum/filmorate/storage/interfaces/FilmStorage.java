@@ -1,10 +1,10 @@
-package ru.yandex.practicum.filmorate.storage.film;
+package ru.yandex.practicum.filmorate.storage.interfaces;
 
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
 
-public interface FilmStorage {
+public interface  FilmStorage {
 
     Collection<Film> findAll();
 
@@ -15,4 +15,6 @@ public interface FilmStorage {
     Film delete(Long id);
 
     Film findById(Long id);
+
+    Collection<Film> getTopFilms(int limit);
 }

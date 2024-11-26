@@ -34,7 +34,7 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleGeneralException(Exception e) {
         log.error("Internal server error occurred: ", e);
         return new ErrorResponse("Internal Server Error", "Произошла внутренняя ошибка сервера");
